@@ -42,7 +42,19 @@ def format_phone(phone):
         return phone_number
     return phone
 
-
+# Дубли
+def merge_duplicates(contacts):
+    grouped = {}
+    for contact in contacts:
+        key = (contact[0], contact[1])
+        if key not in grouped:
+            grouped[key] = contact
+        else:
+            for i in range(len(contact)):
+                if contact[i] and not grouped[key][i]:
+                    grouped[key][i] = contact[i]
+    
+    return list(grouped.values())
 
 
 
