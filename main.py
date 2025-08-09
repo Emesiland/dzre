@@ -2,6 +2,7 @@ from pprint import pprint
 # читаем адресную книгу в формате CSV в список contacts_list
 import csv
 import re
+
 with open('phonebook_raw.csv', encoding='utf-8') as f:
   rows = csv.reader(f, delimiter=',')
   contacts_list = list(rows)
@@ -11,6 +12,7 @@ pprint(contacts_list)
 # ФИО
 def process_fio(contacts):
     result = []
+    
     for contact in contacts:
         fio = ' '.join(contact[:3]).strip().split()
         new_contact = [''] * 7
@@ -23,6 +25,27 @@ def process_fio(contacts):
         new_contact[3:] = contact[3:]
         result.append(new_contact)
     return result
+
+# Номер
+def format_phone(phone):
+    if not phone:
+        return phone
+
+    pattern = r'\+?7?8?[\s-]*\(?(\d{3})\)?[\s-]*(\d{3})[\s-]*(\d{2})[\s-]*(\d{2})(?:\s*доб\.?\s*(\d+))?'
+    match = re.match(pattern, phone.replace(' ', ''))
+    
+    if match:
+        groups = match.groups()
+        phone_number = f'+7({groups[0]}){groups[1]}-{groups[2]}-{groups[3]}'
+        if groups[4]:
+            phone_number += f'доб.{groups[4]}'
+        return phone_number
+    return phone
+
+
+
+
+
 
 # TODO 2: сохраните получившиеся данные в другой файл
 # код для записи файла в формате CSV
