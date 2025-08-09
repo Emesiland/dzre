@@ -1,70 +1,54 @@
-from pprint import pprint
-# читаем адресную книгу в формате CSV в список contacts_list
-import csv
 import re
+from pprint import pprint
+import csv
 
+# Читаем CSV
 with open('phonebook_raw.csv', encoding='utf-8') as f:
-  rows = csv.reader(f, delimiter=',')
-  contacts_list = list(rows)
-pprint(contacts_list)
+    rows = csv.reader(f, delimiter=',')
+    contacts_list = list(rows)
 
-# TODO 1: выполните пункты 1-3 ДЗ
-# ФИО
-def process_fio(contacts):
-    result = []
-    
-    for contact in contacts:
-        fio = ' '.join(contact[:3]).strip().split()
-        new_contact = [''] * 7
-        if len(fio) >= 1:
-            new_contact[0] = fio[0]  
-        if len(fio) >= 2:
-            new_contact[1] = fio[1]
-        if len(fio) >= 3:
-            new_contact[2] = fio[2]
-        new_contact[3:] = contact[3:]
-        result.append(new_contact)
-    return result
+#ФИО
+def process_name(contact):
+    full_name = ' '.join(contact[:3]).strip().split()
+    contact[0] = full_name[0] if len(full_name) > 0 else ''
+    contact[1] = full_name[1] if len(full_name) > 1 else ''
+    contact[2] = full_name[2] if len(full_name) > 2 else ''
+    return contact
 
-# Номер
+# Номера
 def format_phone(phone):
     if not phone:
-        return phone
-
-    pattern = r'\+?7?8?[\s-]*\(?(\d{3})\)?[\s-]*(\d{3})[\s-]*(\d{2})[\s-]*(\d{2})(?:\s*доб\.?\s*(\d+))?'
-    match = re.match(pattern, phone.replace(' ', ''))
-    
+        return ''
+    pattern = r'(\+7|8)?[\s-]*\(?(\d{3})\)?[\s-]*(\d{3})[\s-]*(\d{2})[\s-]*(\d{2})(?:\s*доб\.?\s*(\d+))?'
+    match = re.match(pattern, phone)
     if match:
         groups = match.groups()
-        phone_number = f'+7({groups[0]}){groups[1]}-{groups[2]}-{groups[3]}'
-        if groups[4]:
-            phone_number += f'доб.{groups[4]}'
+        phone_number = f'+7({groups[1]}){groups[2]}-{groups[3]}-{groups[4]}'
+        if groups[5]:
+            phone_number += f' доб.{groups[5]}'
         return phone_number
-    return phone
+    return phone 
 
 # Дубли
-def merge_duplicates(contacts):
-    grouped = {}
-    for contact in contacts:
-        key = (contact[0], contact[1])
-        if key not in grouped:
-            grouped[key] = contact
-        else:
-            for i in range(len(contact)):
-                if contact[i] and not grouped[key][i]:
-                    grouped[key][i] = contact[i]
+def merge_contacts(contacts):
+    grouped_contacts = {}
     
-    return list(grouped.values())
+    for contact in contacts[1:]:
+        contact = process_name(contact)
+        key = (contact[0], contact[1])
+        
+        if key not in grouped_contacts:
+            contact[5] = format_phone(contact[5])
+            grouped_contacts[key] = contact
+        else:
+            existing = grouped_contacts[key]
+            for i in range(len(contact)):
+                if contact[i] and not existing[i]:
+                    existing[i] = contact[i]
+            existing[5] = format_phone(existing[5])
+    
+    result = [contacts[0]] + list(grouped_contacts.values())
+    return result
 
-contacts_list = process_fio(contacts_list)
-for contact in contacts_list:
-    contact[5] = format_phone(contact[5])
-contacts_list = merge_duplicates(contacts_list)
-pprint(contacts_list)
-
-# TODO 2: сохраните получившиеся данные в другой файл
-# код для записи файла в формате CSV
-with open("phonebook.csv", "w", encoding="utf-8") as f:
-  datawriter = csv.writer(f, delimiter=',')
-  # Вместо contacts_list подставьте свой список
-  datawriter.writerows(contacts_list) 
+result_contacts = merge_contacts(contacts_list)
+pprint(result_contacts)
