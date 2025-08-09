@@ -56,8 +56,11 @@ def merge_duplicates(contacts):
     
     return list(grouped.values())
 
-
-
+contacts_list = process_fio(contacts_list)
+for contact in contacts_list:
+    contact[5] = format_phone(contact[5])
+contacts_list = merge_duplicates(contacts_list)
+pprint(contacts_list)
 
 # TODO 2: сохраните получившиеся данные в другой файл
 # код для записи файла в формате CSV
