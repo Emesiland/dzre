@@ -52,3 +52,8 @@ def merge_contacts(contacts):
 
 result_contacts = merge_contacts(contacts_list)
 pprint(result_contacts)
+
+# Сохранение в файл
+with open('phonebook.csv', 'w', encoding='utf-8', newline='') as f:
+    datawriter = csv.writer(f, delimiter=',')
+    datawriter.writerows(contacts_list)
